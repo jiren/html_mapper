@@ -45,6 +45,8 @@ end
 class MatchInformation
   include HtmlMapper
 
+  domains 'http://www.espncricinfo.com'
+
   collection :summery, '.brief-summary', single: true do
     field :tournament, '.headLink:nth(1)'
     field :season, '.headLink:nth(2)', eval: :parse_season 
@@ -76,78 +78,3 @@ end
 
 html = File.read(File.dirname(__FILE__) + "/scorecard.html")
 puts MatchInformation.parse(Nokogiri::HTML.parse(html)).inspect
-
-class Commentary
-  include HtmlMapper
-
-  domains 'http://espncrickinfo.com'
-
-  collection :commentary, '.commentary-event' do
-    field :overs, '.commentary-overs'
-    field :outcome,  '.commentary-text', eval: :parse_commentray
-  end
-
-  #tag :latest
-
-  def parse_commentray(text, ele)
-    values = text.split(',')
-
-    return nil if values.length < 2
-
-    values = values.collect(&:strip)
-
-    outcome = {commentary: values.join(', ')}
-
-    values[0].split('to').tap do |v|
-      outcome[:bowler] = v[0].strip
-      outcome[:bastman] = v[1].strip
-    end
-
-    run_text = values[1]
-
-    if values[1] == 'OUT'
-      outcome[:wicket] = true
-      run_text = 'no run'
-    elsif values[2] == 'OUT'
-      outcome[:wicket] = true
-    end
-
-    outcome[:runs] = parse_runs(run_text)
-
-    if RUNS[run_text] == 6
-      outcome[:six] = true
-    elsif RUNS[run_text] == 4
-      outcome[:four] = true
-    end
-
-    outcome[:wide] = true if run_text.include?('wide')
-    outcome[:no_ball] = true if run_text.include?('no ball')
-    outcome[:wicket] = true if run_text == 'OUT'
-
-    outcome
-  end
-
-  RUNS = {
-    'FOUR' => 4,
-    'SIX' => 6,
-    'no run' => 0
-  }
-
-  def parse_runs(text)
-    RUNS[text] || text.match(/\d+/)[0].to_i
-  end
-
-end
-
-
-#html = File.read(File.dirname(__FILE__) + "/cricket1.html")
-html = File.read(File.dirname(__FILE__) + "/IN_SA_1.html")
-
-url = 'http://www.espncricinfo.com/icc-cricket-world-cup-2015/engine/match/656423.html?innings=1;view=commentary'
-
-#puts Commentary.fetch_and_parse(url).inspect
-
-
-#HtmlMapper.parse('http://espncrickinfo.com', html).tap do |cricket|
-#  puts cricket.inspect
-#end
