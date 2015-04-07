@@ -10,15 +10,15 @@ Gem::Specification.new do |spec|
   spec.email         = ["jirenpatel@gmail.com"]
 
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
+    #spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
   end
 
   spec.summary       = %q{HTML to ruby object or hash}
   spec.description   = %q{Parse html and map to ruby object or hash}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = "https://github.com/jiren/html_mapper"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features|examples)/}) }
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
@@ -27,5 +27,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec'
   spec.add_dependency 'nokogiri', '>= 1.5.5'
   spec.add_dependency 'rest-client', '~> 1.8.0'
-  spec.add_dependency 'yajl-ruby', '~> 1.2.1'
 end

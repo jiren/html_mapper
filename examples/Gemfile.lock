@@ -4,7 +4,6 @@ PATH
     html_mapper (0.1.0)
       nokogiri (>= 1.5.5)
       rest-client (~> 1.8.0)
-      yajl-ruby (~> 1.2.1)
 
 GEM
   remote: https://rubygems.org/
@@ -25,7 +24,6 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.6)
-    yajl-ruby (1.2.1)
 
 PLATFORMS
   ruby

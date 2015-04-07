@@ -19,6 +19,32 @@ class Batsman
   def invalid?(ele)
     !ele.attributes['class'].to_s.empty? 
   end
+
+  def parse_dismissal(text, ele)
+    detail = {}
+
+    if text.include?('run out')
+      detail[:wicket_type] = :run_out
+      detail[:rub_out_by] = text.match(/\((.*)\)/)[1]
+    elsif text.include?('lbw')
+      detail[:wicket_type] = :lbw
+    else
+      out = text.match(/c (.*) b (.*)/)
+
+      if out
+        detail[:catcher] = out[1]
+        detail[:batsman] = out[2]
+
+        if detail[:catcher].include?('sub')
+          detail[:sub] = detail[:catcher].match(/sub \((.*)\)/)[1]
+        end
+
+      end
+    end
+
+    detail
+  end
+
 end
 
 class Bowler
@@ -79,7 +105,7 @@ class MatchInformation
   end
 end
 
-html = File.read(File.dirname(__FILE__) + "/scorecard.html")
+html = File.read(File.dirname(__FILE__) + "/ignore/scorecard.html")
 puts MatchInformation.parse(Nokogiri::HTML.parse(html)).inspect
 
 exit(0)
