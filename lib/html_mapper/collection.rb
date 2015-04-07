@@ -2,12 +2,22 @@ module HtmlMapper
   class Collection
     attr_accessor :selector, :name, :fields, :relations, :options
     
-    def initialize(selector, name = nil)
+    def initialize(name, selector)
       @selector = selector
       @name = name.to_sym
       @fields = []
       @relations = []
       @options = {}
+    end
+
+    def process(doc, obj)
+      eles = doc.search(selector).reject { |ele| exec_reject_if(ele, obj) }
+
+      if options[:single]
+        find(eles.first, obj)
+      else
+        eles.collect { |ele| find(ele, obj) }
+      end
     end
 
     def find(doc, obj)
@@ -54,7 +64,7 @@ module HtmlMapper
       name = name.to_sym
 
       @relations << {
-        klass: string_to_constant(klass),
+        klass: klass.is_a?(String) ? string_to_constant(klass) : klass,
         options: options, 
         name: name 
       }

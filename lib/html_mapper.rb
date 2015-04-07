@@ -45,7 +45,7 @@ module HtmlMapper
       @http_client || RestClient
     end
 
-    def fetch_and_parse(url)
+    def get(url)
       html = http_client.get(url)
       parse(url, html)
     end
@@ -61,7 +61,7 @@ module HtmlMapper
 
     def collection(name, selector, options = {})
       name = name.to_sym
-      @collections[name] = @current_collection = Collection.new(selector, name)
+      @collections[name] = @current_collection = Collection.new(name, selector)
       @current_collection.options = options
 
       yield if block_given?
@@ -86,24 +86,18 @@ module HtmlMapper
       obj = self.new
    
       @collections.each do |name, collection|
-        eles = doc.search(collection.selector).reject do |ele|
-          collection.exec_reject_if(ele, obj)
-        end
-
-        results = if collection.options[:single]
-                    collection.find(eles.first, obj)
-                  else
-                    eles.collect { |ele| collection.find(ele, obj) }
-                  end
-        obj[name] = results
+        obj[name] = collection.process(doc, obj)
       end
 
-      #TODO : Default collection
+      if @default_collection
+        obj[@default_collection.name] = @default_collection.process(doc, obj)
+      end
+
       obj
     end
 
-    def fetch_and_parse(url, html = nil)
-      html = html || HtmlMapper.http_client.get(url)
+    def get(url, html = nil)
+      html = HtmlMapper.http_client.get(url) unless html
       parse(Nokogiri::HTML.parse(html))
     end
 
@@ -111,7 +105,7 @@ module HtmlMapper
 
     def relation(name, klass, options)
       #if block_given?
-      #  options = klass
+      #  options = klass || {}
       #  klass = Class.new{ include HtmlMapper }
       #  yield klass
       #end
@@ -120,7 +114,14 @@ module HtmlMapper
     end
 
     def current_collection
-      @current_collection || (@default_collection ||= Collection.new(:default, '.'))
+      return @current_collection if @current_collection 
+
+      unless @default_collection
+        @default_collection = Collection.new(:default, '.')
+        attr_accessor :default
+      end
+
+      @default_collection
     end
 
   end

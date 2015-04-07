@@ -47,6 +47,9 @@ class MatchInformation
 
   domains 'http://www.espncricinfo.com'
 
+  # Default collection
+  field :global_tournament ,'.brief-summary .headLink:nth(1)'
+
   collection :summery, '.brief-summary', single: true do
     field :tournament, '.headLink:nth(1)'
     field :season, '.headLink:nth(2)', eval: :parse_season 
@@ -78,3 +81,9 @@ end
 
 html = File.read(File.dirname(__FILE__) + "/scorecard.html")
 puts MatchInformation.parse(Nokogiri::HTML.parse(html)).inspect
+
+exit(0)
+
+# Fetch and parse from url
+url = 'http://www.espncricinfo.com/icc-cricket-world-cup-2015/engine/match/656423.html'
+puts HtmlMapper.get(url).inspect
