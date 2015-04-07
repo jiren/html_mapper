@@ -67,7 +67,6 @@ module HtmlMapper
       yield if block_given?
 
       @current_collection = nil
-      attr_accessor name
     end
 
     def field(name, selector, options = {})
@@ -93,12 +92,19 @@ module HtmlMapper
         obj[@default_collection.name] = @default_collection.process(doc, obj)
       end
 
+      @callbacks.each{|c| obj.send(c)} if @callbacks
+
       obj
     end
 
     def get(url, html = nil)
       html = HtmlMapper.http_client.get(url) unless html
       parse(Nokogiri::HTML.parse(html))
+    end
+
+    def after_process(*args)
+      @callbacks ||= []
+      args.each{|callback| @callbacks << callback.to_sym }
     end
 
     private
@@ -114,14 +120,7 @@ module HtmlMapper
     end
 
     def current_collection
-      return @current_collection if @current_collection 
-
-      unless @default_collection
-        @default_collection = Collection.new(:default, '.')
-        attr_accessor :default
-      end
-
-      @default_collection
+      @current_collection || (@default_collection ||= Collection.new(:default, '.'))
     end
 
   end

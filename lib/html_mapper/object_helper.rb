@@ -32,5 +32,9 @@ module HtmlMapper
       "#<#{self.class}:0x#{self.object_id.to_s(16)}:#{@name}> JSON: #{JSON.pretty_generate(@values)}"
     end
 
+    def method_missing(name, *args, &block)
+      @values[name]
+    end
+
   end
 end

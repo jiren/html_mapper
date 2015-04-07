@@ -89,8 +89,10 @@ class MatchInformation
   end
 
   collection :bowlings, 'table.bowling-table' do
-    has_many :bowlder_stats, 'Bowler'
+    has_many :bowler_stats, 'Bowler'
   end
+
+  after_process :count_bowlers
 
   def parse_season(text, ele)
     text.split(' ').first
@@ -103,6 +105,12 @@ class MatchInformation
       detail.to_a[1..3] 
     end
   end
+
+  def count_bowlers
+    p self.bowlings.collect{ |stats| stats[:bowler_stats][:stats].length }
+  end
+
+
 end
 
 html = File.read(File.dirname(__FILE__) + "/ignore/scorecard.html")
