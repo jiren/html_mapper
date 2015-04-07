@@ -2,29 +2,29 @@ module HtmlMapper
   class Boolean; end
 
   module SupportedTypes
-    extend self
+    module_function
 
     def types
       @types ||= {}
     end
 
     def register_type(type, typecaster_obj = nil, &block)
-      types[type] = typecaster_obj || CastWhenType.new(type,&block)
+      types[type] = typecaster_obj || CastWhenType.new(type, &block)
     end
 
     class CastWhenType
       attr_reader :type
 
-      def initialize(type,&block)
+      def initialize(type, &block)
         @type = type
         @apply_block = block || no_operation
       end
 
       def no_operation
-        lambda {|value| value }
+        ->(value) { value }
       end
 
-      def apply?(value,convert_to_type)
+      def apply?(_value, convert_to_type)
         convert_to_type == type
       end
 
@@ -34,13 +34,12 @@ module HtmlMapper
     end
 
     class NilOrAlreadyConverted
-
       def type
         NilClass
       end
 
-      def apply?(value,convert_to_type)
-        value.kind_of?(convert_to_type) || value.nil?
+      def apply?(value, convert_to_type)
+        value.is_a?(convert_to_type) || value.nil?
       end
 
       def apply(value)
@@ -70,8 +69,10 @@ module HtmlMapper
       DateTime.parse(value.to_s)
     end
 
+    BOOL_TYPES = %w(true t 1)
+
     register_type Boolean do |value|
-      ['true', 't', '1'].include?(value.to_s.downcase)
+      BOOL_TYPES.include?(value.to_s.downcase)
     end
 
     register_type Integer do |value|
@@ -87,6 +88,5 @@ module HtmlMapper
         value_to_i
       end
     end
-
   end
 end

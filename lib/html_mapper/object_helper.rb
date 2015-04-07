@@ -12,11 +12,11 @@ module HtmlMapper
       @values[f] = v
     end
 
-    def to_s(*args)
+    def to_s(*_args)
       JSON.pretty_generate(@values)
     end
 
-    def to_json(*args)
+    def to_json(*_args)
       JSON.generate(@values)
     end
 
@@ -29,12 +29,11 @@ module HtmlMapper
     end
 
     def inspect
-      "#<#{self.class}:0x#{self.object_id.to_s(16)}:#{@name}> JSON: #{JSON.pretty_generate(@values)}"
+      "#<#{self.class}:0x#{object_id.to_s(16)}:#{@name}> JSON: #{JSON.pretty_generate(@values)}"
     end
 
-    def method_missing(name, *args, &block)
+    def method_missing(name, *_args, &_block)
       @values[name]
     end
-
   end
 end

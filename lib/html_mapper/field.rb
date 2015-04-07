@@ -1,26 +1,22 @@
 module HtmlMapper
   class Field
     attr_accessor :name, :type, :selector, :options
-    attr_reader :multiple
 
     def initialize(name, selector, options = {})
       @name = name
       @selector = selector.split(',')
       @options = options
-
-      @multiple = @name.is_a?(Array)
     end
 
     def find(doc, obj)
       ele = nil
-      selector.each do |s| 
-        ele = doc.search(s).first 
+      selector.each do |s|
+        ele = doc.search(s).first
         break if ele
       end
 
-      value = ele && process_ele(ele, obj) 
-      
-      options[:as] ? typecast(value) : value 
+      value = ele ? process_ele(ele, obj) : nil
+      options[:as] ? typecast(value) : value
     end
 
     def typecast(value)
@@ -30,16 +26,19 @@ module HtmlMapper
     private
 
     def process_ele(ele, obj)
-      value = options[:attribute] ? ele.attributes[options[:attribute]].to_s : ele.content
-
-      return nil unless value
+      value = if options[:attribute]
+                ele.attributes[options[:attribute]].to_s
+              else
+                ele.content
+              end
 
       value.strip!
-        
-      if options[:eval]
-        options[:eval].is_a?(Symbol) ? obj.send(options[:eval], value, ele) : options[:eval].call(value, ele)
+      return value unless options[:eval]
+
+      if options[:eval].is_a?(Symbol)
+        obj.send(options[:eval], value, ele)
       else
-        value
+        options[:eval].call(value, ele)
       end
     end
   end

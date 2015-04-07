@@ -1,7 +1,7 @@
 module HtmlMapper
   class Collection
     attr_accessor :selector, :name, :fields, :relations, :options
-    
+
     def initialize(name, selector)
       @selector = selector
       @name = name.to_sym
@@ -16,7 +16,7 @@ module HtmlMapper
       if options[:single]
         find(eles.first, obj)
       else
-        eles.collect { |ele| find(ele, obj) }
+        eles.map { |ele| find(ele, obj) }
       end
     end
 
@@ -25,16 +25,8 @@ module HtmlMapper
 
       result = Result.new(name)
 
-      @fields.each do |field|  
-        values = field.find(doc, obj)
-
-        if values
-          if field.multiple
-            field.name.each_with_index{|name, i| result[name] = values[i] }
-          else
-            result[field.name] = values
-          end
-        end
+      @fields.each do |field|
+        result[field.name] = field.find(doc, obj)
       end
 
       @relations.each do |relation|
@@ -42,16 +34,6 @@ module HtmlMapper
       end
 
       result
-    end
-
-    def find_relation_elements(relation, doc)
-      elements = doc.search(relation[:selector])
-
-      if relation[:many]
-        eles.map { |ele| find_fields(ele) }
-      else
-        eles.any? ? find_fields(eles.first) : nil
-      end
     end
 
     def new_field(name, selector, options)
@@ -65,17 +47,17 @@ module HtmlMapper
 
       @relations << {
         klass: klass.is_a?(String) ? string_to_constant(klass) : klass,
-        options: options, 
-        name: name 
+        options: options,
+        name: name
       }
     end
 
     def exec_reject_if(ele, obj)
       return false if options[:reject_if].nil?
 
-      if options[:reject_if].is_a?(Symbol) 
-        obj.send(options[:reject_if], ele) 
-      else 
+      if options[:reject_if].is_a?(Symbol)
+        obj.send(options[:reject_if], ele)
+      else
         options[:reject_if].call(ele)
       end
     end
@@ -94,8 +76,5 @@ module HtmlMapper
       end
       constant
     end
-
-
   end
 end
-

@@ -17,7 +17,7 @@ class Batsman
   end
 
   def invalid?(ele)
-    !ele.attributes['class'].to_s.empty? 
+    !ele.attributes['class'].to_s.empty?
   end
 
   def parse_dismissal(text, ele)
@@ -63,7 +63,7 @@ class Bowler
   end
 
   def invalid?(ele)
-    !ele.attributes['class'].to_s.empty? 
+    !ele.attributes['class'].to_s.empty?
   end
 
 end
@@ -77,10 +77,10 @@ class MatchInformation
   field :global_tournament ,'.brief-summary .headLink:nth(1)'
 
   collection :summery, '.brief-summary', single: true do
-    field :tournament, '.headLink:nth(1)'
-    field :season, '.headLink:nth(2)', eval: :parse_season 
-    field :venue, '.headLink:nth(3)'
-    field [:date, :type, :overs], '.space-top-bottom-5:last', eval: :parse_detail
+    field :tournament, '.innings-information a[1]'
+    field :season, '.space-top-bottom-5[1] a[2]', eval: :parse_season
+    field :venue, '.space-top-bottom-5[2] a[1]'
+    field :detail, '.space-top-bottom-5:last', eval: :parse_detail
   end
 
   collection :battings, 'table.batting-table' do
@@ -95,14 +95,14 @@ class MatchInformation
   after_process :count_bowlers
 
   def parse_season(text, ele)
-    text.split(' ').first
+    text && text.split(' ').first
   end
 
   DETAIL_REGX = /(.*) - (.*) match \((\d+)-/
 
   def parse_detail(text, ele)
     if detail = text.match(DETAIL_REGX)
-      detail.to_a[1..3] 
+      {date: detail[1], type: detail[2], overs: detail[3].to_f}
     end
   end
 
@@ -112,6 +112,8 @@ class MatchInformation
 
 
 end
+
+HtmlMapper.http_client = 1
 
 html = File.read(File.dirname(__FILE__) + "/ignore/scorecard.html")
 puts MatchInformation.parse(Nokogiri::HTML.parse(html)).inspect

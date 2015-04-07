@@ -8,6 +8,5 @@ module HtmlMapper
       @name = name
       @values = {}
     end
-
   end
 end

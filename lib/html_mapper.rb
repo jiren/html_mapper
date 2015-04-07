@@ -13,11 +13,11 @@ require 'html_mapper/object_helper'
 require 'html_mapper/result'
 
 module HtmlMapper
-  class NotFound < StandardError; end
+  class NotFoundError < StandardError; end
 
   def self.included(base)
     base.instance_eval do
-      @collections = {} 
+      @collections = {}
     end
 
     base.extend ClassMethods
@@ -26,20 +26,17 @@ module HtmlMapper
   end
 
   module ModuleMethods
-
     def parse(url, html)
       parser = ParserMap.get(url)
 
       if parser
         parser.parse(Nokogiri::HTML.parse(html))
       else
-        raise NotFound.new("No parser found for #{url}")
+        fail NotFoundError, "No parser found for #{url}"
       end
     end
 
-    def http_client=(client)
-      @http_client = client
-    end
+    attr_writer :http_client
 
     def http_client
       @http_client || RestClient
@@ -51,12 +48,11 @@ module HtmlMapper
     end
   end
 
-  self.extend ModuleMethods
+  extend ModuleMethods
 
   module ClassMethods
-
     def domains(*args)
-      args.each{|domain| ParserMap.add(self, domain)}
+      args.each { |domain| ParserMap.add(self, domain) }
     end
 
     def collection(name, selector, options = {})
@@ -82,8 +78,8 @@ module HtmlMapper
     end
 
     def parse(doc)
-      obj = self.new
-   
+      obj = new
+
       @collections.each do |name, collection|
         obj[name] = collection.process(doc, obj)
       end
@@ -92,7 +88,7 @@ module HtmlMapper
         obj[@default_collection.name] = @default_collection.process(doc, obj)
       end
 
-      @callbacks.each{|c| obj.send(c)} if @callbacks
+      @callbacks.each { |c| obj.send(c) } if @callbacks
 
       obj
     end
@@ -104,25 +100,25 @@ module HtmlMapper
 
     def after_process(*args)
       @callbacks ||= []
-      args.each{|callback| @callbacks << callback.to_sym }
+      args.each { |callback| @callbacks << callback.to_sym }
     end
 
     private
 
     def relation(name, klass, options)
-      #if block_given?
-      #  options = klass || {}
-      #  klass = Class.new{ include HtmlMapper }
-      #  yield klass
-      #end
+      # if block_given?
+      #   options = klass || {}
+      #   klass = Class.new{ include HtmlMapper }
+      #   yield klass
+      # end
 
       current_collection.new_relation(name, klass, options)
     end
 
     def current_collection
-      @current_collection || (@default_collection ||= Collection.new(:default, '.'))
+      @current_collection ||
+        (@default_collection ||= Collection.new(:default, '.'))
     end
-
   end
 
   module InstanceMethods
@@ -130,5 +126,4 @@ module HtmlMapper
       @values = {}
     end
   end
-
 end
