@@ -1,9 +1,5 @@
 module HtmlMapper
   module ObjectHelper
-    def self.included(base)
-      base.send :include, Enumerable
-    end
-
     def [](f)
       @values[f]
     end
@@ -18,6 +14,10 @@ module HtmlMapper
 
     def to_json(*_args)
       JSON.generate(@values)
+    end
+
+    def to_hash
+      @values
     end
 
     def as_json(*args)

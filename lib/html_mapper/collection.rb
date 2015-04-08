@@ -2,12 +2,12 @@ module HtmlMapper
   class Collection
     attr_accessor :selector, :name, :fields, :relations, :options
 
-    def initialize(name, selector)
+    def initialize(name, selector, options)
       @selector = selector
       @name = name.to_sym
       @fields = []
       @relations = []
-      @options = {}
+      @options = options
     end
 
     def process(doc, obj)
@@ -24,13 +24,14 @@ module HtmlMapper
       return nil if doc.nil?
 
       result = Result.new(name)
+      result.parent = obj
 
       @fields.each do |field|
         result[field.name] = field.find(doc, obj)
       end
 
       @relations.each do |relation|
-        result[relation[:name]] = relation[:klass].parse(doc)
+        relation.parse(doc, result)
       end
 
       result
@@ -43,13 +44,7 @@ module HtmlMapper
     end
 
     def new_relation(name, klass, options)
-      name = name.to_sym
-
-      @relations << {
-        klass: klass.is_a?(String) ? string_to_constant(klass) : klass,
-        options: options,
-        name: name
-      }
+      @relations << Relation.new(name, klass, options)
     end
 
     def exec_reject_if(ele, obj)
@@ -60,21 +55,6 @@ module HtmlMapper
       else
         options[:reject_if].call(ele)
       end
-    end
-
-    private
-
-    def string_to_constant(type)
-      names = type.split('::')
-      constant = Object
-      names.each do |name|
-        constant = if constant.const_defined?(name)
-                     constant.const_get(name)
-                   else
-                     constant.const_missing(name)
-                   end
-      end
-      constant
     end
   end
 end

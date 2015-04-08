@@ -8,6 +8,7 @@ require 'html_mapper/version'
 require 'html_mapper/parser_map'
 require 'html_mapper/supported_types'
 require 'html_mapper/collection'
+require 'html_mapper/relation'
 require 'html_mapper/field'
 require 'html_mapper/object_helper'
 require 'html_mapper/result'
@@ -30,7 +31,7 @@ module HtmlMapper
       parser = ParserMap.get(url)
 
       if parser
-        parser.parse(Nokogiri::HTML.parse(html))
+        parser.parse(Nokogiri::HTML.parse(html), url)
       else
         fail NotFoundError, "No parser found for #{url}"
       end
@@ -57,8 +58,7 @@ module HtmlMapper
 
     def collection(name, selector, options = {})
       name = name.to_sym
-      @collections[name] = @current_collection = Collection.new(name, selector)
-      @current_collection.options = options
+      @current_collection = @collections[name] = Collection.new(name, selector, options)
 
       yield if block_given?
 
@@ -70,15 +70,17 @@ module HtmlMapper
     end
 
     def has_many(name, klass, options = {})
-      relation(name, klass, options.merge!(many: true))
+      current_collection.new_relation(name, klass, options.merge!(many: true))
     end
 
     def has_one(name, klass, options = {})
-      relation(name, klass, options.merge!(many: false))
+      current_collection.new_relation(name, klass, options.merge!(many: false))
     end
 
-    def parse(doc)
+    def parse(doc, url = nil)
+      doc = Nokogiri::HTML.parse(doc) if doc.is_a?(String)
       obj = new
+      obj.crawl_url = url
 
       @collections.each do |name, collection|
         obj[name] = collection.process(doc, obj)
@@ -95,7 +97,7 @@ module HtmlMapper
 
     def get(url, html = nil)
       html = HtmlMapper.http_client.get(url) unless html
-      parse(Nokogiri::HTML.parse(html))
+      parse(Nokogiri::HTML.parse(html), url)
     end
 
     def after_process(*args)
@@ -105,23 +107,15 @@ module HtmlMapper
 
     private
 
-    def relation(name, klass, options)
-      # if block_given?
-      #   options = klass || {}
-      #   klass = Class.new{ include HtmlMapper }
-      #   yield klass
-      # end
-
-      current_collection.new_relation(name, klass, options)
-    end
-
     def current_collection
       @current_collection ||
-        (@default_collection ||= Collection.new(:default, '.'))
+        (@default_collection ||= Collection.new(:_default, '.', {}))
     end
   end
 
   module InstanceMethods
+    attr_accessor :crawl_url
+
     def initialize
       @values = {}
     end
