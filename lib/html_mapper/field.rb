@@ -4,7 +4,7 @@ module HtmlMapper
 
     def initialize(name, selector, options = {})
       @name = name
-      @selector = selector.split(',')
+      @selector = selector.split(',').map(&:strip)
       @options = options
     end
 
