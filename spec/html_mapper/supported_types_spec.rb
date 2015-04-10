@@ -17,13 +17,19 @@ describe HtmlMapper::SupportedTypes do
       expect(value).to eq nil
     end
 
-    it 'integer with text with number' do
+    it 'integer with text number' do
       value = typecaster.types[Integer].apply(' 100text')
 
       expect(value).to eq 100
     end
 
-    it 'boolean' do
+    it 'integer with random text' do
+      value = typecaster.types[Integer].apply('rt')
+
+      expect(value).to eq nil
+    end
+
+    it 'boolean "true"' do
       value = typecaster.types[HtmlMapper::Boolean].apply('true')
 
       expect(value).to be true
@@ -45,6 +51,24 @@ describe HtmlMapper::SupportedTypes do
       value = typecaster.types[HtmlMapper::Boolean].apply('random')
 
       expect(value).to be false
+    end
+
+    it 'float with greater then zero' do
+      value = typecaster.types[Float].apply('11.20')
+
+      expect(value).to be 11.20
+    end
+
+    it 'float with  zero value' do
+      value = typecaster.types[Float].apply('0.0')
+
+      expect(value).to be 0.0
+    end
+
+    it 'float with text value' do
+      value = typecaster.types[Float].apply('nf')
+
+      expect(value).to be_nil
     end
   end
 end

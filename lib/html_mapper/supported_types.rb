@@ -53,10 +53,6 @@ module HtmlMapper
       value.to_s
     end
 
-    register_type Float do |value|
-      value.to_f
-    end
-
     register_type Time do |value|
       Time.parse(value.to_s) rescue Time.at(value.to_i)
     end
@@ -75,14 +71,27 @@ module HtmlMapper
       BOOL_TYPES.include?(value.to_s.downcase)
     end
 
+    DIGIT_REGX = /^\d+/
+
     register_type Integer do |value|
       value_to_i = value.to_i
 
-      if value_to_i == 0 && value != '0'
+      if value_to_i == 0 && !(value.to_s =~ DIGIT_REGX)
         nil
       else
         value_to_i
       end
     end
+
+    register_type Float do |value|
+      value_to_f = value.to_f
+
+      if value_to_f == 0.0 && !(value.to_s =~ DIGIT_REGX)
+        nil
+      else
+        value_to_f
+      end
+    end
+
   end
 end

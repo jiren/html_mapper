@@ -2,11 +2,11 @@ module HtmlMapper
   class Result
     include ObjectHelper
 
-    attr_reader :values, :name
+    attr_reader :values, :_name
     attr_accessor :parent
 
     def initialize(name)
-      @name = name
+      @_name = name
       @values = {}
     end
   end
