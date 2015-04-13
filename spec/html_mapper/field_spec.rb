@@ -19,7 +19,7 @@ describe HtmlMapper::Field do
       field = described_class.new(:name, '.name, .title')
 
       expect(field.name).to eq :name
-      expect(field.selector).to eq(['.name', '.title'])
+      expect(field.selector).to eq('.name, .title')
     end
   end
 
@@ -54,6 +54,18 @@ describe HtmlMapper::Field do
       expect(field.find(doc, event)).to eq('http://foo.com')
     end
 
+    it 'select multiple fields and return as array of values' do
+      field = described_class.new(:events, '.events span', all: true, as: Integer)
+
+      expect(field.find(doc, event)).to eq([1,2,3])
+    end
+
+  end
+
+  it 'typecast field value' do
+    field = described_class.new(:event, '.event', as: Integer)
+
+    expect(field.typecast('101')).to eq 101
   end
 
 end

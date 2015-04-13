@@ -1,25 +1,21 @@
 module HtmlMapper
-  class ParserMap
+  class Parsers
     class << self
-      attr_accessor :str_parsers, :regx_parsers
-
-      def _init_
-        @regx_parsers = {}
-        @str_parsers = {}
-      end
+      attr_accessor :parsers, :regx_parsers
 
       def add(klass, domain)
         if domain.is_a?(Regexp)
-          @regx_parsers[domain] = klass
+          (@regx_parsers[domain] ||= []) << klass
         elsif domain.is_a?(String)
-          (URI(domain).host || domain).tap { |host| @str_parsers[host] = klass }
+          host = URI(domain).host || domain
+          (@parsers[host] ||= []) << klass
         end
       end
 
       def get(url)
         host = URI(url).host
 
-        parser = @str_parsers[host]
+        parser = @parsers[host]
         return parser if parser
 
         parser = @regx_parsers.find { |k, _| k =~ url }
@@ -27,6 +23,7 @@ module HtmlMapper
       end
     end
 
-    _init_
+    self.parsers = {}
+    self.regx_parsers = {}
   end
 end

@@ -113,13 +113,9 @@ class MatchInformation
 
 end
 
-HtmlMapper.http_client = 1
-
 html = File.read(File.dirname(__FILE__) + "/ignore/scorecard.html")
-puts MatchInformation.parse(Nokogiri::HTML.parse(html)).inspect
-
-exit(0)
+puts HtmlMapper.parse('http://www.espncricinfo.com', html)
 
 # Fetch and parse from url
-url = 'http://www.espncricinfo.com/icc-cricket-world-cup-2015/engine/match/656423.html'
-puts HtmlMapper.get(url).inspect
+# url = 'http://www.espncricinfo.com/icc-cricket-world-cup-2015/engine/match/656423.html'
+# puts HtmlMapper.get(url).inspect

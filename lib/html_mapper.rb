@@ -5,7 +5,7 @@ require 'time'
 require 'json'
 
 require 'html_mapper/version'
-require 'html_mapper/parser_map'
+require 'html_mapper/parsers'
 require 'html_mapper/supported_types'
 require 'html_mapper/collection'
 require 'html_mapper/relation'
@@ -28,10 +28,10 @@ module HtmlMapper
 
   module ModuleMethods
     def parse(url, html)
-      parser = ParserMap.get(url)
+      parsers = Parsers.get(url)
 
-      if parser
-        parser.parse(Nokogiri::HTML.parse(html), url)
+      if parsers
+        parsers.map { |klass| klass.parse(Nokogiri::HTML.parse(html), url) }
       else
         fail NotFoundError, "No parser found for #{url}"
       end
@@ -53,7 +53,7 @@ module HtmlMapper
 
   module ClassMethods
     def domains(*args)
-      args.each { |domain| ParserMap.add(self, domain) }
+      args.each { |domain| Parsers.add(self, domain) }
     end
 
     def collection(name, selector, options = {})

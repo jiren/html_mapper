@@ -4,19 +4,18 @@ module HtmlMapper
 
     def initialize(name, selector, options = {})
       @name = name
-      @selector = selector.split(',').map(&:strip)
+      @selector = selector
       @options = options
     end
 
     def find(doc, obj)
-      ele = nil
-      selector.each do |s|
-        ele = doc.search(s).first
-        break if ele
-      end
+      eles = doc.search(selector)
 
-      value = ele ? process_ele(ele, obj) : nil
-      options[:as] ? typecast(value) : value
+      if options[:all]
+        eles.map{|ele| find_values(obj, ele)}.compact
+      else
+        find_values(obj, eles.first)
+      end
     end
 
     def typecast(value)
@@ -24,6 +23,13 @@ module HtmlMapper
     end
 
     private
+
+    def find_values(obj, ele)
+      if ele
+        value = process_ele(ele, obj)
+        options[:as] ? typecast(value) : value
+      end
+    end
 
     def process_ele(ele, obj)
       value = if options[:attribute]
