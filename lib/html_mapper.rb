@@ -12,6 +12,7 @@ require 'html_mapper/relation'
 require 'html_mapper/field'
 require 'html_mapper/object_helper'
 require 'html_mapper/result'
+require 'html_mapper/export_mapper'
 
 module HtmlMapper
   class NotFoundError < StandardError; end
@@ -27,6 +28,10 @@ module HtmlMapper
   end
 
   module ModuleMethods
+    # It select parser based on given url and parse page.
+    #
+    #     HtmlMapper.parse('http://www.imdb.com/search/title?count=100', HTML content of given url)
+    #
     def parse(url, html)
       parsers = Parsers.get(url)
 
@@ -37,6 +42,7 @@ module HtmlMapper
       end
     end
 
+    # @return [Http Client]
     attr_writer :http_client
 
     def http_client
@@ -47,13 +53,25 @@ module HtmlMapper
       html = http_client.get(url)
       parse(url, html)
     end
+
+    def to_mapper(mapper_json)
+      ExportMapper.to_mapper(JSON.parse(mapper_json,  { symbolize_names: true }))
+    end
+
   end
 
   extend ModuleMethods
 
   module ClassMethods
+    attr_reader :collections, :default_collection
+
     def domains(*args)
       args.each { |domain| Parsers.add(self, domain) }
+      @domains = args
+    end
+
+    def domain_list
+      @domains
     end
 
     def collection(name, selector, options = {})
@@ -105,6 +123,10 @@ module HtmlMapper
       args.each { |callback| @callbacks << callback.to_sym }
     end
 
+    def export
+      ExportMapper.export(self)
+    end
+
     private
 
     def current_collection
@@ -114,6 +136,7 @@ module HtmlMapper
   end
 
   module InstanceMethods
+    # @return [String, nil] Url
     attr_accessor :crawl_url
 
     def initialize

@@ -24,6 +24,7 @@ module HtmlMapper
       @values.as_json(*args)
     end
 
+    # Yields each field value, one at a time.
     def each(&blk)
       @values.each(&blk)
     end

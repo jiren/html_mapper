@@ -1,6 +1,6 @@
 module HtmlMapper
   class Relation
-    attr_reader :name
+    attr_reader :name, :klass, :options
 
     def initialize(name, klass, options = {})
       @name = name.to_sym
@@ -9,10 +9,19 @@ module HtmlMapper
     end
 
     def parse(doc, parent)
-      @klass.parse(doc).tap do |obj|
+      klass.parse(doc).tap do |obj|
         parent[name] = obj
         obj.parent = parent
       end
+    end
+
+    def as_json
+      {
+        name:    name,
+        klass:   klass.name,
+        options: options,
+        mapper:  klass.export
+      }
     end
 
     private

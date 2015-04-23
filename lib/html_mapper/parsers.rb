@@ -21,6 +21,12 @@ module HtmlMapper
         parser = @regx_parsers.find { |k, _| k =~ url }
         return parser.last if parser
       end
+
+      def each(&blk)
+        @parsers.each(&blk)
+        @regx_parsers.each(&blk)
+      end
+
     end
 
     self.parsers = {}

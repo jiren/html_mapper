@@ -12,6 +12,11 @@ module HtmlMapper
       types[type] = typecaster_obj || CastWhenType.new(type, &block)
     end
 
+    def find_by_name(type)
+      typecaster = SupportedTypes.types.find{|k, _| k.name == type }
+      typecaster ? typecaster.first : nil
+    end
+
     class CastWhenType
       attr_reader :type
 

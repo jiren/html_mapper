@@ -22,6 +22,18 @@ module HtmlMapper
       SupportedTypes.types[options[:as]].apply(value)
     end
 
+    def as_json
+      h = { name: name, selector: selector }
+
+      if options.any?
+        h[:options] = options
+        h[:options][:as] = options[:as].name if options[:as]
+        h[:options].delete(:eval) if options[:eval].is_a?(Proc)
+      end
+
+      return h
+    end
+
     private
 
     def find_values(obj, ele)

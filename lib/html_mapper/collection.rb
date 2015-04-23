@@ -56,5 +56,16 @@ module HtmlMapper
         options[:reject_if].call(ele)
       end
     end
+
+    def as_json
+      {
+        name: name,
+        selector: selector,
+        options: options,
+        fields: fields.map(&:as_json),
+        relations: relations.map(&:as_json)
+      }
+    end
+
   end
 end

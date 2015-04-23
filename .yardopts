@@ -1,0 +1,11 @@
+--title 'HTML Mapper'
+--output-dir api-docs
+--template-path doc-src/templates
+--markup markdown
+--markup-provider rdiscount
+--hide-api private
+--plugin sitemap
+--asset doc-src/images:images
+-e doc-src/plugins/apis.rb
+-e doc-src/plugins/resources.rb
+lib/**/*.rb
