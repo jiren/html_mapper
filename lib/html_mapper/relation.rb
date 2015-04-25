@@ -20,7 +20,7 @@ module HtmlMapper
         name:    name,
         klass:   klass.name,
         options: options,
-        mapper:  klass.export
+        mapper:  klass.as_json
       }
     end
 

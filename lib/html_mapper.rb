@@ -123,8 +123,12 @@ module HtmlMapper
       args.each { |callback| @callbacks << callback.to_sym }
     end
 
-    def export
+    def as_json
       ExportMapper.export(self)
+    end
+
+    def to_json
+      as_json.to_json
     end
 
     private
