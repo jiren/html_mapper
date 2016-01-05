@@ -3,7 +3,7 @@ PATH
   specs:
     html_mapper (0.1.0)
       nokogiri (>= 1.5.5)
-      rest-client (~> 1.8.0)
+      rest-client
 
 GEM
   remote: https://rubygems.org/

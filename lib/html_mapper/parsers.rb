@@ -26,7 +26,6 @@ module HtmlMapper
         @parsers.each(&blk)
         @regx_parsers.each(&blk)
       end
-
     end
 
     self.parsers = {}

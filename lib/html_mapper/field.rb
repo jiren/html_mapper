@@ -26,7 +26,7 @@ module HtmlMapper
       h = { name: name, selector: selector }
 
       if options.any?
-        h[:options] = options
+        h[:options] = options.dup
         h[:options][:as] = options[:as].name if options[:as]
         h[:options].delete(:eval) if options[:eval].is_a?(Proc)
       end

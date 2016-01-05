@@ -12,7 +12,7 @@ require 'html_mapper/relation'
 require 'html_mapper/field'
 require 'html_mapper/object_helper'
 require 'html_mapper/result'
-require 'html_mapper/export_mapper'
+require 'html_mapper/mapper_exporter'
 
 module HtmlMapper
   class NotFoundError < StandardError; end
@@ -42,22 +42,28 @@ module HtmlMapper
       end
     end
 
-    # @return [Http Client]
+    #
+    # @params [RestClient] http_client
+    #   Set other http client like httparty etc
+    #
     attr_writer :http_client
 
+    #
+    # @return [RestClient]
+    #
     def http_client
       @http_client || RestClient
     end
 
+    # @params [String] url
     def get(url)
       html = http_client.get(url)
       parse(url, html)
     end
 
     def to_mapper(mapper_json)
-      ExportMapper.to_mapper(JSON.parse(mapper_json,  { symbolize_names: true }))
+      MapperExporter.to_mapper(JSON.parse(mapper_json,  { symbolize_names: true }))
     end
-
   end
 
   extend ModuleMethods
@@ -124,11 +130,27 @@ module HtmlMapper
     end
 
     def as_json
-      ExportMapper.export(self)
+      MapperExporter.export(self)
     end
 
     def to_json
       as_json.to_json
+    end
+
+    #
+    # @param [String] dir
+    #   Output directory name
+    # @param [String] url
+    #   Web page url
+    # @param [String] html
+    #   Optional
+    #
+    def export_mapper_with_data(dir, url, html = nil)
+      file = File.join(dir, to_s)
+
+      File.write("#{file}.mapper", JSON.pretty_generate(as_json))
+      data = get(url, html)
+      File.write("#{file}.data", data.to_json)
     end
 
     private

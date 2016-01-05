@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe HtmlMapper::ExportMapper do
+describe HtmlMapper::MapperExporter do
 
   module ScraperTest
     class HasScraper

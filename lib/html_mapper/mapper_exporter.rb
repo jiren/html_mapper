@@ -1,5 +1,5 @@
 module HtmlMapper
-  module ExportMapper
+  module MapperExporter
     module_function
 
     def export(klass)
@@ -36,22 +36,25 @@ module HtmlMapper
       data[:options] = {} unless data[:options]
       collection = Collection.new(data[:name].to_sym, data[:selector], data[:options])
 
-      data[:fields].each do |f|
-        f[:options] = {} unless f[:options]
-
-        if f[:options][:as]
-          f[:options][:as] = SupportedTypes.find_by_name(f[:options][:as])
-        end
-
-        collection.new_field(f[:name], f[:selector], f[:options])
-      end
-
-      data[:relations].each do |r|
-        relation_klass = to_mapper(r[:mapper])
-        collection.new_relation(r[:name].to_sym, relation_klass, r[:options] || {})
-      end
+      data[:fields].each { |f| add_field(collection, f) }
+      data[:relations].each { |r| add_realtion(collection, r) }
 
       collection
+    end
+
+    def add_field(collection, field)
+      field[:options] = {} unless field[:options]
+
+      if field[:options][:as]
+        field[:options][:as] = SupportedTypes.find_by_name(field[:options][:as])
+      end
+
+      collection.new_field(field[:name], field[:selector], field[:options])
+    end
+
+    def add_realtion(collection, relation)
+      relation_klass = to_mapper(relation[:mapper])
+      collection.new_relation(relation[:name].to_sym, relation_klass, relation[:options] || {})
     end
   end
 end
